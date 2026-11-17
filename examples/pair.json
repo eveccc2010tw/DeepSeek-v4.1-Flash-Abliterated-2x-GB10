@@ -1,0 +1,20 @@
+{
+  "nodes": [
+    {
+      "host": "spark-head",
+      "container": "mia-zig-ablit-r0",
+      "operations_dir": "/srv/deepseek/operations",
+      "memguard_floor_gib": "2.0",
+      "memguard_hold_s": "4",
+      "memguard_hard_gib": "1.0"
+    },
+    {
+      "host": "spark-worker",
+      "container": "mia-zig-ablit-r1",
+      "operations_dir": "/srv/deepseek/operations",
+      "memguard_floor_gib": "2.0",
+      "memguard_hold_s": "4",
+      "memguard_hard_gib": "1.0"
+    }
+  ]
+}
