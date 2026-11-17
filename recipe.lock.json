@@ -1,0 +1,62 @@
+{
+  "recipe": {
+    "url": "https://github.com/MiaAI-Lab/DeepSeek-v4.1-Flash-1017-2x-DGX-Sparks.git",
+    "revision": "c7f2b85100f0a7b099c92a4e21825e30d93c9c51"
+  },
+  "engine": {
+    "url": "https://github.com/bertholomus/TensorFold.git",
+    "revision": "fbbc97132cd004237d9887b8d3185896efaedc5c"
+  },
+  "inputs_revision": "59402086381a42c74d53053443224eec2790b4c5",
+  "kit": {
+    "url": "https://github.com/bertholomus/deepseek-v4.1-tensorfold-tp2-2xgb10.git",
+    "revision": "abe07c7d509a0199cc7fec15263be2aa52ac652f"
+  },
+  "model": {
+    "id": "Mia-AiLab/DeepSeek-V4.1-Flash-1017-EXL3-EAQ-v1.1-2.9-bpw",
+    "revision": "aee640e2afba93be683bb5b9b420115fe7fbac20"
+  },
+  "overlay": {
+    "id": "drowzeys/keys-DeepSeek-V4.1-Flash-1017-Abliterated",
+    "revision": "d6681ac778ecbd7b422382ff6af88fb3d2debcb7",
+    "file": "exl3_wo_b_l10_35_mia29.safetensors",
+    "bytes": 682275992,
+    "sha256": "dcefb4a735f4985e4a5097cad69a059d85453f3bba148af3fc98269c7ee1ff7c"
+  },
+  "engram": {
+    "id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+    "revision": "1bae0e1088993b9b82de08f59de5be5a34e42170"
+  },
+  "zig": {
+    "version": "0.17.0",
+    "aarch64_sha256": "9e8d11661d4ae3bd57702a3832781e23ad151dde5798e16a5ccd503f65234ff8"
+  },
+  "base_image": "nvcr.io/nvidia/pytorch:26.07-py3",
+  "measured": {
+    "A_recipe": "31457d05f8917301bbf609c3d12c7f364af8a4a6",
+    "A_patch_digest": "07d9bcbe5743",
+    "B_patch_digest": "e6ea17d42858"
+  },
+  "custom_patch_provenance": {
+    "0100-dsv41-wide-copy-windows.patch": {
+      "tested_sha256": "8b34094c615d56fe618eb7d58ef6f2d73bcafca356d3338f94edb949d968231c",
+      "published_sha256": "fbf5e6bc3c02257e5f0ef5b53766738efee273f07a5add065c13a555edc21bbb",
+      "diff_hunks_identical": true
+    },
+    "0101-prompt-progress-states.patch": {
+      "tested_sha256": "22a5da998016aafd94e7a2d378ccef804e27e1603b88191ee53f082b17b7557f",
+      "published_sha256": "2bbf8bba032db42c803ba5d14e3e71406ef5c24fdf89aa24d967647b150be81b",
+      "diff_hunks_identical": true
+    },
+    "0102-responses-keepalive-ping.patch": {
+      "tested_sha256": "fdd3b5c2d9bdf00c72dfaf0a26ef8c56bb5a9d2ed2ee1415226a3e1e7d2a2f0a",
+      "published_sha256": "fdd3b5c2d9bdf00c72dfaf0a26ef8c56bb5a9d2ed2ee1415226a3e1e7d2a2f0a",
+      "diff_hunks_identical": true
+    },
+    "0103-responses-buffer-growth.patch": {
+      "tested_sha256": "8483abb5503c411ad45102670083da27f2174a3d23cc0d58fef163cff613a136",
+      "published_sha256": "8483abb5503c411ad45102670083da27f2174a3d23cc0d58fef163cff613a136",
+      "diff_hunks_identical": true
+    }
+  }
+}

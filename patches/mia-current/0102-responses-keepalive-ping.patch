@@ -1,0 +1,44 @@
+Subject: [PATCH] Keep Responses and Anthropic pings behind SSE open
+
+0065 already supplies Responses ping. Preserve the pre-open guard and test it.
+
+diff --git a/zig/src/server/anthropic.zig b/zig/src/server/anthropic.zig
+--- a/zig/src/server/anthropic.zig
++++ b/zig/src/server/anthropic.zig
+@@ -111,6 +111,7 @@
+ 
+     fn ping(ctx: *anyopaque) error{Closed}!void {
+         const w: *Wire = @ptrCast(@alignCast(ctx));
++        if (!w.opened) return;
+         const o = json.newObject(w.reply.a) catch return error.Closed;
+         o.put(w.reply.a, "type", .{ .string = "ping" }) catch return error.Closed;
+         return sse.event(w.reply.conn, w.reply.a, "ping", .{ .object = o });
+@@ -408,3 +409,8 @@
+     }
+     return .{ .object = o };
+ }
++
++test "keepalive does not touch the connection before the stream opens" {
++    var wire: Wire = .{ .reply = undefined };
++    try Wire.ping(&wire);
++}
+diff --git a/zig/src/server/responses.zig b/zig/src/server/responses.zig
+--- a/zig/src/server/responses.zig
++++ b/zig/src/server/responses.zig
+@@ -209,6 +209,7 @@
+     /// An SSE comment while the reply is silent (a long prefill, an answer held from its call's opener on).
+     fn ping(ctx: *anyopaque) error{Closed}!void {
+         const w: *Wire = @ptrCast(@alignCast(ctx));
++        if (!w.opened) return;
+         return sse.comment(w.reply.conn, "ping");
+     }
+ 
+@@ -493,3 +494,8 @@
+         return r.finish(if (reason != null and reason.? == .string) reason.?.string else null, data.get("usage"), data.get("tensorfold"));
+     }
+ };
++
++test "keepalive does not touch the connection before the stream opens" {
++    var wire: Wire = .{ .reply = undefined };
++    try Wire.ping(&wire);
++}

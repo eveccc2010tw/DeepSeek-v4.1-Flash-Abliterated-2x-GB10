@@ -1,0 +1,32 @@
+DeepSeek V4.1 Flash Abliterated dual-GB10 deployment recipe
+Copyright 2026 OSSLab contributors
+
+This curated repository publishes Thx / OSSLab's deployment experience,
+integration tools, four native-engine patches, and synthetic A/B records.
+Integration contributions and documentation are Apache-2.0 licensed.
+
+Credits and sources:
+- DeepSeek: DeepSeek V4.1 Flash 1017 and Engram tables.
+- MiaAI-Lab: EAQ quantization and two-DGX-Spark deployment recipe.
+- drowzeys / Keys: the matching Mia29 attention weight overlay.
+- bertholomus (BertholomusAI / Albert Lee): native TensorFold DeepSeek family,
+  two-node TP2 implementation and GB10 kernel kit.
+- TensorFold contributors: the engine framework.
+- turboderp / ExLlamaV3: EXL3 quantization format.
+- sehoon123 Tuned: Responses buffer-growth strategy, ported in patch 0103.
+- Mia's recipe contributors: official patches fetched at the locked revision.
+
+Published modifications:
+- 0100: wide copy windows; 0101: RAM prefill progress states;
+  0102: SSE pre-open keepalive guards; 0103: Responses buffer-growth port.
+- Integration tools and tests are curated from the OSSLab deployment tools.
+- The public supervisor uses standard OpenSSH aliases instead of the original
+  managed SSH wrapper. Original patch email/date headers are removed; diff
+  hunks are unchanged. Rebuild tests omit superseded historical patch checks.
+
+TensorFold's NOTICE, MIT license for older code, third-party notices and
+DeepSeek-family attribution are retained in LICENSES/. Mia's recipe NOTICE
+is retained there as attribution for the fetched recipe, which is not vendored.
+Patches' original context remains under its original authors' licenses.
+No model weights, overlay weights, Engram, kernel kit or container image are
+distributed here; their licenses and access conditions continue to apply.
