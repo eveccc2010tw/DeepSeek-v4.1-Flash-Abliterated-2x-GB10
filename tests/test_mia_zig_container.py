@@ -109,6 +109,8 @@ class NativeCandidateTests(unittest.TestCase):
             self.assertEqual(env["TF_DS_ROUND_ROWS"], "32")
             self.assertNotIn("TENSORFOLD_MEMORY_RESERVE_GIB", env)
             self.assertNotIn("WEIGHTLESS_STEER_PATH", env)
+            self.assertNotIn("TF_DS_RDMA_CPUS", env)
+            self.assertNotIn("TF_DS_ENGRAM_LEAD", env)
             host = cfg["HostConfig"]
             self.assertEqual(host["NetworkMode"], "host")
             self.assertEqual(host["RestartPolicy"]["Name"], "no")
@@ -221,6 +223,29 @@ class NativeCandidateTests(unittest.TestCase):
                 module.candidate_config(spec, "sha256:test")
         with self.assertRaises(ValueError):
             module.candidate_config(self.spec, "mutable:latest")
+
+    def test_rdma_cpus_and_engram_lead_align_across_both_ranks(self):
+        for rank in (0, 1):
+            cfg = module.candidate_config(
+                {**self.spec, "rank": rank, "rdma_cpus": "0", "engram_lead": True}, "sha256:test")
+            env = dict(e.split("=", 1) for e in cfg["Env"])
+            self.assertEqual(env["TF_DS_RDMA_CPUS"], "0")
+            self.assertEqual(env["TF_DS_ENGRAM_LEAD"], "1")
+        norm = module.candidate_config({**self.spec, "rdma_cpus": "0, 10, 11", "engram_lead": 0}, "sha256:test")
+        norm_env = dict(e.split("=", 1) for e in norm["Env"])
+        self.assertEqual(norm_env["TF_DS_RDMA_CPUS"], "0,10,11")
+        self.assertNotIn("TF_DS_ENGRAM_LEAD", norm_env)
+        int_cpu = module.candidate_config({**self.spec, "rdma_cpus": 0, "engram_lead": 1}, "sha256:test")
+        int_env = dict(e.split("=", 1) for e in int_cpu["Env"])
+        self.assertEqual(int_env["TF_DS_RDMA_CPUS"], "0")
+        self.assertEqual(int_env["TF_DS_ENGRAM_LEAD"], "1")
+        for key, value in (("rdma_cpus", ""), ("rdma_cpus", "0-3"), ("rdma_cpus", "-1"),
+                           ("rdma_cpus", "65536"), ("rdma_cpus", "0,1,2,3"), ("rdma_cpus", "cpu0"),
+                           ("rdma_cpus", True), ("rdma_cpus", 1.5),
+                           ("engram_lead", "1"), ("engram_lead", "true"),
+                           ("engram_lead", 2), ("engram_lead", 1.0)):
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                module.candidate_config({**self.spec, key: value}, "sha256:test")
 
 
 if __name__ == "__main__":

@@ -99,7 +99,7 @@ docker run --rm --network none --entrypoint python3 \
 4. 兩端 Engram 各讀本機檔案，避免以 NFS 承擔隨機讀取。保存模型／template／rank-cache／image 指紋。
 5. 依自己的拓樸實測 RoCE GID index、HCA、interface、`/dev/infiniband` devices；範例的文件用 IP `192.0.2.10`、`rdma0`、`roce0`、GID 3 都是示例，必須替換。
 
-複製 [head](../examples/hostspec-head.json)／[worker](../examples/hostspec-worker.json) 到不納入 Git 的私有設定目錄，填實際絕對路徑及網路參數，保留明確的 48-row、0.5 GiB cache、32 GiB spill、35 GiB free floor。新 spill 目錄需先建立。Head 的 `api_key_file` 是你自行建立的非空 0600 檔案；spec 只記路徑。
+複製 [head](../examples/hostspec-head.json)／[worker](../examples/hostspec-worker.json) 到不納入 Git 的私有設定目錄，填實際絕對路徑及網路參數，保留明確的 48-row、0.5 GiB cache、32 GiB spill、35 GiB free floor、`rdma_cpus: "0"`（兩端對應 `TF_DS_RDMA_CPUS=0`，在 GB10 將 `tf-rdma-proxy` 綁定在 Cortex-A725 CPU 0）與 `engram_lead: true`（兩端對應 `TF_DS_ENGRAM_LEAD=1`，開啟 Engram chunk-ahead 預讀）。若部署於不同 CPU 拓樸，請將 `rdma_cpus` 改為該平台的非主要計算小核或留空不設定。新 spill 目錄需先建立。Head 的 `api_key_file` 是你自行建立的非空 0600 檔案；spec 只記路徑。
 
 候選容器 helper 要求 `--original` 指向保留的舊容器，以保存回退 inspect；適用既有部署升級，**不支援空機首次建立容器**。首次部署請依 `candidate_config()` 產生的 Docker create request 和上游的啟動／裝置契約自行建立，這部分本公開版沒有一鍵工具。
 
