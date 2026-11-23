@@ -208,6 +208,34 @@ def rdma_backoff(spec):
     return idle_s, nap_us
 
 
+def rdma_cpus_setting(spec):
+    """Optional TF_DS_RDMA_CPUS comma-separated CPU IDs pinning RDMA proxy threads (0068)."""
+    raw = spec.get("rdma_cpus")
+    if raw is None:
+        return None
+    if type(raw) is int:
+        if not 0 <= raw <= 65535:
+            raise ValueError("rdma_cpus CPU index must be from 0 to 65535")
+        return str(raw)
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError("rdma_cpus must be a non-empty CPU list such as '0' or '0,10,11'")
+    parts = [p.strip() for p in raw.split(",")]
+    if not 1 <= len(parts) <= 3 or any(not p.isascii() or not p.isdigit() for p in parts):
+        raise ValueError("rdma_cpus must contain 1 to 3 comma-separated CPU indices")
+    cpus = [int(p) for p in parts]
+    if any(not 0 <= c <= 65535 for c in cpus):
+        raise ValueError("rdma_cpus CPU index must be from 0 to 65535")
+    return ",".join(str(c) for c in cpus)
+
+
+def engram_lead_enabled(spec):
+    """Whether each Engram layer uses a lead reader thread to prefetch prompt rows (TF_DS_ENGRAM_LEAD)."""
+    val = spec.get("engram_lead", False)
+    if type(val) not in (bool, int) or val not in (False, True, 0, 1):
+        raise ValueError("engram_lead must be a boolean or 0/1")
+    return bool(val)
+
+
 def engine_identity(spec, image_labels=None):
     """(engine_id, recipe_patches): prefers explicit spec overrides, else inspected image labels, else module defaults."""
     labels = image_labels or {}
@@ -242,6 +270,8 @@ def candidate_config(spec, image_id, image_labels=None):
     budget = thinking_budget(spec)
     cache_gib = prompt_cache_budget(spec)
     idle_s, nap_us = rdma_backoff(spec)
+    rdma_cpus = rdma_cpus_setting(spec)
+    engram_lead = engram_lead_enabled(spec)
     gid = spec["gid_index"]
     if type(gid) is not int or not 0 <= gid <= 255:
         raise ValueError("Invalid verified RoCE GID index")
@@ -289,6 +319,10 @@ def candidate_config(spec, image_id, image_labels=None):
     }
     if nchannels > 0:
         env["NCCL_MAX_NCHANNELS"] = str(nchannels)
+    if rdma_cpus is not None:
+        env["TF_DS_RDMA_CPUS"] = rdma_cpus
+    if engram_lead:
+        env["TF_DS_ENGRAM_LEAD"] = "1"
     if fill_chunks:
         env.update(TF_FILL_CHUNKS=str(fill_chunks), TF_FILL_FIRST=str(fill_first),
                    TF_FILL_CUT_IN=str(fill_cut_in))

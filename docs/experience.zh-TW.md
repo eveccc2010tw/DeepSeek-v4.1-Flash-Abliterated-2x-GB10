@@ -33,6 +33,14 @@ guard 先於 rank 啟動；一端 rank 結束，由 supervisor 停整對。停�
 
 本配方的 2.0 GiB soft floor 是這組硬體的實測設定，不能保證其他桌面工作負載也足夠。最近測試仍未刻意觸發 hard guard 或 rank crash。
 
+## RDMA Proxy 綁核與 Engram 預讀（2026-11-20 更新）
+
+以下兩項都在既有 `fbbc9713`＋`c7f2b85`（含補丁 0035 與 0068）映像內建，不需重編引擎，透過雙端環境變數即可切換：
+
+- **`TF_DS_RDMA_CPUS=0`（補丁 0068）**：`tf-rdma-proxy` 在 decode 期間會持續 busy-poll，未綁核時常被排程到 GB10 的 Cortex-X925（3.9 GHz）大核。設為 `0` 後透過 `taskset -pc` 確認雙端 proxy 均固定在 CPU 0（Cortex-A725 2.8 GHz 小核）。單流與 3-stream 總吞吐量皆持平（差異 `<1%`，與上游補丁註解一致），輸出完全一致，3-stream 壓測時雙機 `acpitz` 峰值溫度降低約 2–4.5 °C。
+- **`TF_DS_ENGRAM_LEAD=1`（引擎內建＋補丁 0035）**：讓每個 Engram 層用獨立 reader 執行緒提前一個 chunk 預讀下一塊 prompt rows，與計算重疊。在 `O_DIRECT`（`TF_DS_ENGRAM_AIO=1`）實測下，64K 冷啟動 prefill TTFT 由 `29.841s`／`30.316s` 縮短至 `28.690s`（`-4.6%`／`+4.8% tok/s`），131K 冷啟動 TTFT 由 `62.108s`／`63.343s` 縮短至 `59.186s`（`-5.6%`／`+6.0% tok/s`）；131K 最低 `MemAvailable` 維持 `6.744 / 7.311 GiB`，未增加記憶體壓力。
+- **不適用項說明**：對照同期間公開的 `GLM-5.3-Flash-DGX-Sparks-1104` 配方，其 `TF_GLM_PDL`、`qmmf`、DFlash2 草稿模型與 4bpw `mcg` 屬 GLM-5.3 架構專用，DeepSeek-V4.1（CSA2 + Engram + `/kit`）不適用；本配方已啟用 `KV_SHARD=1`、`L2_PREFETCH=1`、`HC_SIDE=1`、`ENGRAM_AIO=1`、`GRAPHS=1`（cap 128）、`ROUND_ROWS=48` 與 32 GiB SSD spill。
+
 ## 長文快取要分清楚 RAM 與 SSD
 
 `fill_chunks=1`、`fill_first=1`、`fill_cut_in=8192` 讓長 prefill 之間可插入短請求。實測短請求 4.618 秒完成，早於長請求約 146 秒首字。這是該 workload 的結果，不是所有請求的延遲保證。

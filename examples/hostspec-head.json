@@ -32,6 +32,8 @@
   "reasoning_effort": "xhigh",
   "thinking_budget": 20000,
   "prompt_progress_tokens": 65536,
+  "rdma_cpus": "0",
+  "engram_lead": true,
   "rank": 0,
   "api_key_file": "/srv/deepseek/private/api-key"
 }

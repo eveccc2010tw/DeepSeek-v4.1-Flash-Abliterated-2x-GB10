@@ -57,6 +57,8 @@ class PublicRecipeTests(unittest.TestCase):
             self.assertEqual(env['TF_DS_ROUND_ROWS'], '48')
             self.assertEqual(env['TF_DS_POOL'], '2101248')
             self.assertEqual(env['TF_DS_RECIPE_PATCHES'], 'public-digest')
+            self.assertEqual(env['TF_DS_RDMA_CPUS'], '0')
+            self.assertEqual(env['TF_DS_ENGRAM_LEAD'], '1')
             if spec['rank'] == 0:
                 self.assertEqual(env['TF_DS_COPY_ROWS'], '48')
                 self.assertEqual(cfg['Cmd'][cfg['Cmd'].index('--prompt-cache-gib')+1], '0.5')
